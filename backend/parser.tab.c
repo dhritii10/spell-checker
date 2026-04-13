@@ -1256,7 +1256,9 @@ yyreturnlab:
 
 #line 30 "parser.y"
 
-
+void yywrap(){
+    return;
+}
 void yyerror(const char *s) {
     printf("Parse error: %s\n", s);
 }

@@ -1,9 +1,12 @@
-from flask import Flask, request, send_from_directory
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import subprocess
+import os
 
 app = Flask(__name__)
 CORS(app)
+
+from flask import send_from_directory
 
 @app.route('/')
 def home():
@@ -11,13 +14,19 @@ def home():
 
 @app.route('/check', methods=['POST'])
 def check():
-    text = request.data.decode()
 
-    with open("input.txt", "w") as f:
-        f.write(text)
+    if 'file' in request.files:
+        file = request.files['file']
+        filepath = "input.txt"
+        file.save(filepath)
+    else:
+        text = request.data.decode()
+        filepath = "input.txt"
+        with open(filepath, "w") as f:
+            f.write(text)
 
     result = subprocess.run(
-        ["../backend/spellchecker", "input.txt"],
+        ["../backend/spellchecker", filepath],
         capture_output=True,
         text=True
     )
@@ -35,6 +44,7 @@ def check():
                     "suggestion": parts[2]
                 })
 
-    return {"errors": data}
+    return jsonify({"errors": data})
 
-app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)
